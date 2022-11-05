@@ -1,0 +1,3 @@
+Ensimmäisellä viikolla tutustuin kurssin ohjeisiin, kun en päässyt osallistumaan aloitusluennolle. Aihe valikoitui valmiista aiheideoista. Kertasin tietoja shunting-yard algoritmista, joskin perusajatus on tuttu. Loin projektille pohjan, joka sisältää mm. työkalut testaamiseen ja testikattavuuden laatimiseen. Aikaa ei aivan kauheasti ollut, mutta uskoisin homman lähtevän hyvin käyntiin.
+
+Hieman jäi askarruttamaan aiheen laajuus, kun se tuntuu moniin muihin esimerkkiaiheisiin nähden melko suppealta. Samoin mietityttää mitä projektissa voi testata? Oletettavasti ainakin itse laskimen ja tietorakenteiden toimintaa, mutta miltä osin esim. tehokkuutta on syytä testata?
