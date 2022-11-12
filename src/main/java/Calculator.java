@@ -8,14 +8,20 @@ public class Calculator {
         Scanner scanner = new Scanner(System.in);
         while (true) {
             System.out.println("Enter an expression or quit with q: ");
-            String expression = scanner.nextLine();// .replaceAll("\\s", "");
+            String expression = scanner.nextLine().replaceAll("\\s", "");
             if (expression.equals("q"))
                 break;
-            System.out.println("The result is: " + calculate(expression));
+            Queue<String> postfix = infixToPostfix(expression);
+            System.out.println("The result is: " + evaluate(postfix));
         }
     }
 
-    private static String calculate(String expression) {
+    /**
+     * Converts an infix expression to a postfix expression
+     * @param expression the infix expression
+     * @return the postfix as a queue expression
+     */
+    private static Queue<String> infixToPostfix(String expression) {
         Queue<String> queue = new ArrayDeque<>();
         Stack<String> stack = new Stack<>();
 
@@ -23,58 +29,53 @@ public class Calculator {
 
         for (String token : tokens) {
             switch (token) {
-                case "(":
-                    stack.push(token);
-                    break;
-                case ")":
-                    while (!stack.peek().equals("(")) {
+                case "(" -> stack.push(token);
+                case ")" -> {
+                    while (!stack.peek().equals("("))
                         queue.add(stack.pop());
-                    }
                     stack.pop();
-                    break;
-                case "+":
-                case "-":
-                    while (!stack.isEmpty() && !stack.peek().equals("(")) queue.add(stack.pop());
+                }
+                case "+", "-" -> {
+                    while (!stack.isEmpty() && !stack.peek().equals("("))
+                        queue.add(stack.pop());
                     stack.push(token);
-                    break;
-                case "*":
-                case "/":
-                    while (!stack.isEmpty() && (stack.peek().equals("*") || stack.peek().equals("/"))) queue.add(stack.pop());
+                }
+                case "*", "/" -> {
+                    while (!stack.isEmpty() && (stack.peek().equals("*") || stack.peek().equals("/")))
+                        queue.add(stack.pop());
                     stack.push(token);
-                    break;
-                default:
-                    queue.add(token);
+                }
+                default -> queue.add(token);
             }
         }
 
-        while (!stack.isEmpty()) queue.add(stack.pop());
+        while (!stack.isEmpty())
+            queue.add(stack.pop());
 
-        return evaluate(queue);
+        return queue;
     }
 
+    /**
+     * Evaluates a postfix expression
+     * @param postfix the postfix expression
+     * @return the result
+     */
     private static String evaluate(Queue<String> queue) {
         Stack<String> stack = new Stack<>();
         String token;
         while (!queue.isEmpty()) {
             switch (token = queue.poll()) {
-                case "+":
+                case "+" ->
                     stack.push(String.valueOf(Double.parseDouble(stack.pop()) + Double.parseDouble(stack.pop())));
-                    break;
-                case "-":
+                case "-" ->
                     stack.push(String.valueOf(-Double.parseDouble(stack.pop()) + Double.parseDouble(stack.pop())));
-                    break;
-                case "*":
+                case "*" ->
                     stack.push(String.valueOf(Double.parseDouble(stack.pop()) * Double.parseDouble(stack.pop())));
-                    break;
-                case "/":
+                case "/" ->
                     stack.push(String.valueOf(1 / Double.parseDouble(stack.pop()) * Double.parseDouble(stack.pop())));
-                    break;
-                default:
-                    stack.push(token);
+                default -> stack.push(token);
             }
-
         }
         return stack.pop();
     }
-
 }
