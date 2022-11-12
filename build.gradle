@@ -30,7 +30,8 @@ repositories {
 }
 
 dependencies {
-    testImplementation group: 'junit', name: 'junit', version: '4.13'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
 }
 
 jacocoTestReport {
@@ -41,6 +42,8 @@ jacocoTestReport {
 }
 
 test {
+    useJUnitPlatform()
     testLogging.showStandardStreams = true
     systemProperties System.getProperties()
 }
+

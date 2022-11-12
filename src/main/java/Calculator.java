@@ -21,7 +21,7 @@ public class Calculator {
      * @param expression the infix expression
      * @return the postfix as a queue expression
      */
-    private static Queue<String> infixToPostfix(String expression) {
+    public static Queue<String> infixToPostfix(String expression) {
         Queue<String> queue = new ArrayDeque<>();
         Stack<String> stack = new Stack<>();
 
@@ -57,25 +57,42 @@ public class Calculator {
 
     /**
      * Evaluates a postfix expression
-     * @param postfix the postfix expression
+     * @param queue the postfix expression
      * @return the result
      */
-    private static String evaluate(Queue<String> queue) {
-        Stack<String> stack = new Stack<>();
-        String token;
+    public static Double evaluate(Queue<String> queue) {
+        Stack<Double> stack = new Stack<>();
+
         while (!queue.isEmpty()) {
-            switch (token = queue.poll()) {
-                case "+" ->
-                    stack.push(String.valueOf(Double.parseDouble(stack.pop()) + Double.parseDouble(stack.pop())));
-                case "-" ->
-                    stack.push(String.valueOf(-Double.parseDouble(stack.pop()) + Double.parseDouble(stack.pop())));
-                case "*" ->
-                    stack.push(String.valueOf(Double.parseDouble(stack.pop()) * Double.parseDouble(stack.pop())));
-                case "/" ->
-                    stack.push(String.valueOf(1 / Double.parseDouble(stack.pop()) * Double.parseDouble(stack.pop())));
-                default -> stack.push(token);
+            String token = queue.remove();
+            if (isNumber(token))
+                stack.push(Double.parseDouble(token));
+            else {
+                double operand2 = stack.pop();
+                double operand1 = stack.pop();
+                switch (token) {
+                    case "+" -> stack.push(operand1 + operand2);
+                    case "-" -> stack.push(operand1 - operand2);
+                    case "*" -> stack.push(operand1 * operand2);
+                    case "/" -> stack.push(operand1 / operand2);
+                }
             }
         }
+
         return stack.pop();
+    }
+
+    /**
+     * Checks if a token is a number
+     * @param token the string to check
+     * @return true if the string is a number, false otherwise
+     */
+    private static boolean isNumber(String token) {
+        try {
+            Double.parseDouble(token);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }
