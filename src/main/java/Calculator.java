@@ -1,11 +1,17 @@
 import java.util.ArrayDeque;
+import java.util.HashMap;
 import java.util.Queue;
 import java.util.Scanner;
 import java.util.Stack;
 
 public class Calculator {
+    static HashMap<String, Double> variables = new HashMap<>();
+
+    // TODO Refactor main method
     public static void main(String[] args) {
         Tokenizer tokenizer = new Tokenizer();
+        Queue<String> infix;
+        Queue<String> postfix;
 
         // TODO: Dependency injection for the scanner
         Scanner scanner = new Scanner(System.in);
@@ -14,15 +20,42 @@ public class Calculator {
             String expression = scanner.nextLine().replaceAll("\\s", "");
             if (expression.equals("q"))
                 break;
-            Queue<String> infix = tokenizer.tokenize(expression);
+            if (expression.contains("=")) {
+                String[] parts = expression.split("=");
+                if (parts.length != 2) {
+                    System.out.println("Invalid assignment");
+                    continue;
+                }
+                String variable = parts[0];
+                infix = tokenizer.tokenize(parts[1]);
+                postfix = infixToPostfix(infix);
+                postfix = assignVariables(postfix);
+                variables.put(variable, evaluate(postfix));
+            }
+            else {
+                infix = tokenizer.tokenize(expression);                
+                // TODO: Validate the infix expression
+                postfix = infixToPostfix(infix);
+                postfix = assignVariables(postfix);
+                System.out.println("The result is: " + evaluate(postfix));
+            }
 
-            // TODO: Validate the infix expression
-
-            Queue<String> postfix = infixToPostfix(infix);
-            System.out.println("The result is: " + evaluate(postfix));
         }
     }
     
+    private static Queue<String> assignVariables(Queue<String> postfix) {
+        Queue<String> result = new ArrayDeque<>();
+        for (String token : postfix) {
+            if (variables.containsKey(token)) {
+                result.add(String.valueOf(variables.get(token)));
+            }
+            else {
+                result.add(token);
+            }
+        }
+        return result;
+    }
+
     /**
      * Converts an infix expression to a postfix expression
      * 
