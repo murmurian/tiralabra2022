@@ -9,11 +9,11 @@ plugins {
 sourceCompatibility = 17
 targetCompatibility = 17
 
-mainClassName = 'Calculator'
+mainClassName = 'Main'
 
 jar {
     manifest {
-        attributes 'Main-Class': 'Calculator'
+        attributes 'Main-Class': 'Main'
     }
 }
 
