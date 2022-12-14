@@ -1,55 +1,52 @@
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Queue;
-import java.util.Scanner;
 import java.util.Stack;
 
 public class Calculator {
-    static HashMap<String, Double> variables = new HashMap<>();
+    private HashMap<String, Double> variables;
+    private Tokenizer tokenizer;
+    private Validator validator;
 
-    // TODO Refactor main method
-    public static void main(String[] args) {
-        Tokenizer tokenizer = new Tokenizer();
+    public Calculator() {
+        this.variables = new HashMap<>();
+        this.tokenizer = new Tokenizer();
+        this.validator = new Validator();
+    }
+
+    public String calculate(String expression) {
         Queue<String> infix;
         Queue<String> postfix;
+        Boolean isAssignment = false;
+        String variable = "";
+        Double result;
 
-        // TODO: Dependency injection for the scanner
-        Scanner scanner = new Scanner(System.in);
-        while (true) {
-            System.out.println("Enter an expression or quit with q: ");
-            String expression = scanner.nextLine().replaceAll("\\s", "");
-            if (expression.equals("q"))
-                break;
-            if (expression.contains("=")) {
-                String[] parts = expression.split("=");
-                if (parts.length != 2) {
-                    System.out.println("Invalid assignment");
-                    continue;
-                }
-                String variable = parts[0];
-                infix = tokenizer.tokenize(parts[1]);
-                postfix = infixToPostfix(infix);
-                postfix = assignVariables(postfix);
-                variables.put(variable, evaluate(postfix));
+        if (expression.contains("=")) {
+            String[] parts = expression.split("=");
+            if (parts.length != 2 || !validator.validateVariable(parts[0])) {
+                return validator.validateAssignment(parts);
             }
-            else {
-                infix = tokenizer.tokenize(expression);                
-                // TODO: Validate the infix expression
-                postfix = infixToPostfix(infix);
-                postfix = assignVariables(postfix);
-                System.out.println("The result is: " + evaluate(postfix));
-            }
-
+            variable = parts[0];
+            isAssignment = true;
+            infix = tokenizer.tokenize(parts[1]);
+        } else {
+            infix = tokenizer.tokenize(expression);
         }
+
+        postfix = infixToPostfix(infix);
+        postfix = assignVariables(postfix);
+        result = evaluate(postfix);
+        if (isAssignment)
+            variables.put(variable, result);
+        return (isAssignment) ? "Variable " + variable + " assigned to " + result : String.valueOf(result);
     }
-    
-    private static Queue<String> assignVariables(Queue<String> postfix) {
+
+    private Queue<String> assignVariables(Queue<String> postfix) {
         Queue<String> result = new ArrayDeque<>();
         for (String token : postfix) {
             if (variables.containsKey(token)) {
                 result.add(String.valueOf(variables.get(token)));
-            }
-            else {
+            } else {
                 result.add(token);
             }
         }
