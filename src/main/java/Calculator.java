@@ -6,39 +6,58 @@ import java.util.Stack;
 public class Calculator {
     private HashMap<String, Double> variables;
     private Tokenizer tokenizer;
-    private Validator validator;
 
     public Calculator() {
         this.variables = new HashMap<>();
         this.tokenizer = new Tokenizer();
-        this.validator = new Validator();
     }
 
     public String calculate(String expression) {
-        Queue<String> infix;
-        Queue<String> postfix;
+        if (expression.isEmpty())
+            return "Expression is empty.";
+        Validator validator = new Validator();
+        Queue<String> queue;
         Boolean isAssignment = false;
         String variable = "";
         Double result;
 
         if (expression.contains("=")) {
             String[] parts = expression.split("=");
-            if (parts.length != 2 || !validator.validateVariable(parts[0])) {
+            if (parts.length != 2 || !validator.isVariable(parts[0])) {
                 return validator.validateAssignment(parts);
             }
             variable = parts[0];
             isAssignment = true;
-            infix = tokenizer.tokenize(parts[1]);
+            queue = tokenizer.tokenize(parts[1]);
         } else {
-            infix = tokenizer.tokenize(expression);
+            queue = tokenizer.tokenize(expression);
         }
 
-        postfix = infixToPostfix(infix);
-        postfix = assignVariables(postfix);
-        result = evaluate(postfix);
+        if (!validator.ValidateExpression(queue, variables))
+            return validator.getErrorMessage();
+
+        queue = parseNegativeExpressions(queue);
+        queue = infixToPostfix(queue);
+        queue = assignVariables(queue);
+        result = evaluate(queue);
+
         if (isAssignment)
             variables.put(variable, result);
+
         return (isAssignment) ? "Variable " + variable + " assigned to " + result : String.valueOf(result);
+    }
+
+    private Queue<String> parseNegativeExpressions(Queue<String> queue) {
+        Queue<String> result = new ArrayDeque<>();
+        for (String token : queue) {
+            if (token.length() > 1 && token.charAt(0) == '-' && !Character.isDigit(token.charAt(1))) {
+                result.add("-1");
+                result.add("*");
+                result.add(token.substring(1));
+            } else
+                result.add(token);
+        }
+        return result;
     }
 
     private Queue<String> assignVariables(Queue<String> postfix) {
@@ -109,7 +128,7 @@ public class Calculator {
      */
     public static Double evaluate(Queue<String> queue) {
         Stack<Double> stack = new Stack<>();
-
+        
         // TODO: Implement strategy design pattern?
         while (!queue.isEmpty()) {
             String token = queue.remove();
@@ -136,10 +155,6 @@ public class Calculator {
         }
 
         return stack.pop();
-    }
-
-    private static Double evaluateFunction(String token, double operand1) {
-        return null;
     }
 
     /**

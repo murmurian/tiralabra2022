@@ -1,4 +1,5 @@
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Queue;
 
 public class Tokenizer {
@@ -22,6 +23,7 @@ public class Tokenizer {
                 infix.add(token);
             }
         }
+        infix = parseNegativeValues(infix);
         return infix;
     }
 
@@ -48,6 +50,90 @@ public class Tokenizer {
             function.add(token);
 
         return function;
+    }
+
+    private static ArrayDeque<String> parseNegativeValues(Queue<String> function) {
+        ArrayDeque<String> result = new ArrayDeque<>();
+
+        /*
+        String firstToken = "";
+        String secondToken = "";
+
+        while (function.peek().equals("-")) {
+            function.remove();
+            if (isNumber(function.peek())) {
+                result.add("-" + function.poll());
+                break;
+            } else {
+                result.add("-1");
+                result.add("*");
+                if (function.peek().equals("-"))
+                    continue;
+                result.add(function.poll());
+            }
+        }
+
+        for (String token : function) {
+            if ((isOperator(token) || isFunction(token)) && firstToken.equals("")) {
+                firstToken = token;
+                result.add(token);
+                continue;
+            } else if ((isOperator(firstToken) || isFunction(firstToken)) && secondToken.equals("-")
+                    && (isNumber(token) || isFunction(token))) {
+                result.removeLast();
+                result.add("-" + token);
+                firstToken = "";
+            } else if (isOperator(firstToken) && isFunction(secondToken)) {
+                result.removeLast();
+                result.add("-" + token);
+                firstToken = "";
+                secondToken = "";
+                continue;
+            } else {
+                result.add(token);
+            }
+            secondToken = token;
+        }*/
+
+        System.out.println("input: " + function.toString());
+
+        if (function.size() == 1) {
+            result.add(function.peek());
+            return result;
+        }
+        result.add(function.peek());
+        String firstToken = function.poll();
+        result.add(function.peek());
+        String secondToken = function.poll();
+
+        if (firstToken.equals("-") && (isNumber(secondToken) || isFunction(secondToken))) {
+            result.removeLast();
+            result.removeLast();
+            result.add("-" + secondToken);
+            if (function.size() == 0)
+                return result;
+            firstToken = secondToken;
+            secondToken = function.peek();
+        }
+
+        for (String token : function) {
+            if (isParentheses(token)) {
+                result.add(token);
+                continue;
+            }
+            if ((isOperator(firstToken) || firstToken.equals("(")) && secondToken.equals("-") && (isNumber(token) || isFunction(token))) {
+                result.removeLast();
+                result.add("-" + token);
+            } else if (isFunction(firstToken) && secondToken.equals("-") && (isNumber(token) || isFunction(token))) {
+                result.removeLast();
+                result.add("-" + token);
+            } else 
+                result.add(token);
+                firstToken = secondToken;
+                secondToken = token;
+        }
+
+        return result;
     }
 
     /**
@@ -77,7 +163,7 @@ public class Tokenizer {
      * @return true if the token is a function, false otherwise
      */
     private static boolean isFunction(String token) {
-        return token.equals("sin") || token.equals("cos") || token.equals("tan");
+        return token.equals("sin") || token.equals("cos") || token.equals("tan") || token.equals("-sin") || token.equals("-cos") || token.equals("-tan");
     }
 
     /**

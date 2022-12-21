@@ -10,6 +10,10 @@ public class Main {
             String expression = io.readLine();
             if (expression.equals("quit"))
                 break;
+            if (expression.equals("help")) {
+                printInstructions(io);
+                continue;
+            }
             io.print(calculator.calculate(expression));
         }
     }
