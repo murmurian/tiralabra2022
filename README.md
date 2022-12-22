@@ -1,5 +1,28 @@
 # Tieteellinen laskin
 
+Ohjelman voi suorittaa komennolla:
+
+```
+./gradlew gradle run -q --console=plain
+```
+
+Testit:
+  
+```
+./gradlew test
+```
+Jacoco testit:
+
+```
+./gradlew jacocoTestReport
+```
+
+Checkstyle:
+
+```
+./gradlew checkstyleMain
+```
+
 ## Dokumentaatio:
 
 * [Määrittelydokumentti](https://github.com/murmurian/tiralabra2022/blob/main/dokumentaatio/maarittelydokumentti.md)

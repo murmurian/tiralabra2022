@@ -6,6 +6,7 @@ import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Queue;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class CalculatorTest {
@@ -45,7 +46,7 @@ public class CalculatorTest {
         assertIterableEquals(trigInfix2, Calculator.tokenize(trigExpression2));
         assertIterableEquals(trigInfix3, Calculator.tokenize(trigExpression3));
     }
-*/
+
     @Test
     public void testInfixToPostfixBasic() {
         assertIterableEquals(new ArrayDeque<>(Arrays.asList("1", "2", "+")), Calculator.infixToPostfix(infix1));
@@ -77,7 +78,7 @@ public class CalculatorTest {
         assertTrue(Calculator.evaluate(new ArrayDeque<>(Arrays.asList("1", "sin"))) == Math.sin(1));
         assertTrue(Calculator.evaluate(new ArrayDeque<>(Arrays.asList("1.0", "sin", "2", "cos", "+"))) == Math.sin(1.0) + Math.cos(2));
     }
-/*
+
     @Test
     public void calculatorWorks() {
         assertTrue(Calculator.evaluate(Calculator.infixToPostfix(Calculator.tokenize(expression1))) == 3);

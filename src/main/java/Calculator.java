@@ -111,7 +111,7 @@ public class Calculator {
      * @param expression the infix expression
      * @return the postfix as a queue expression
      */
-    public static Queue<String> infixToPostfix(Queue<String> infix) {
+    private static Queue<String> infixToPostfix(Queue<String> infix) {
         Queue<String> queue = new ArrayDeque<>();
         Stack<String> stack = new Stack<>();
 
@@ -161,7 +161,7 @@ public class Calculator {
      * @param queue the postfix expression
      * @return the result
      */
-    public static Double evaluate(Queue<String> queue) {
+    private static Double evaluate(Queue<String> queue) {
         Stack<Double> stack = new Stack<>();
 
         // TODO: Implement strategy design pattern?
