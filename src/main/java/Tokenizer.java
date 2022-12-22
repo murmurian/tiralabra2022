@@ -1,5 +1,4 @@
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Queue;
 
 public class Tokenizer {
@@ -52,55 +51,20 @@ public class Tokenizer {
         return function;
     }
 
+    /**
+     * Parses negative values and adds a negative sign to the number or function
+     * 
+     * @param function the function to parse
+     * @return a queue of Strings representing the function
+     */
     private static ArrayDeque<String> parseNegativeValues(Queue<String> function) {
         ArrayDeque<String> result = new ArrayDeque<>();
-
-        /*
-        String firstToken = "";
-        String secondToken = "";
-
-        while (function.peek().equals("-")) {
-            function.remove();
-            if (isNumber(function.peek())) {
-                result.add("-" + function.poll());
-                break;
-            } else {
-                result.add("-1");
-                result.add("*");
-                if (function.peek().equals("-"))
-                    continue;
-                result.add(function.poll());
-            }
-        }
-
-        for (String token : function) {
-            if ((isOperator(token) || isFunction(token)) && firstToken.equals("")) {
-                firstToken = token;
-                result.add(token);
-                continue;
-            } else if ((isOperator(firstToken) || isFunction(firstToken)) && secondToken.equals("-")
-                    && (isNumber(token) || isFunction(token))) {
-                result.removeLast();
-                result.add("-" + token);
-                firstToken = "";
-            } else if (isOperator(firstToken) && isFunction(secondToken)) {
-                result.removeLast();
-                result.add("-" + token);
-                firstToken = "";
-                secondToken = "";
-                continue;
-            } else {
-                result.add(token);
-            }
-            secondToken = token;
-        }*/
-
-        System.out.println("input: " + function.toString());
 
         if (function.size() == 1) {
             result.add(function.peek());
             return result;
         }
+
         result.add(function.peek());
         String firstToken = function.poll();
         result.add(function.peek());
@@ -116,15 +80,27 @@ public class Tokenizer {
             secondToken = function.peek();
         }
 
+        if (firstToken.equals("-") && secondToken.equals("(")) {
+            result.removeLast();
+            result.removeLast();
+            result.add("-1");
+            result.add("*");
+            result.add("(");
+            if (function.size() == 0)
+                return result;
+            firstToken = secondToken;
+            secondToken = function.peek();
+        }
+
         for (String token : function) {
             if (isParentheses(token)) {
                 result.add(token);
                 continue;
             }
-            if ((isOperator(firstToken) || firstToken.equals("(")) && secondToken.equals("-") && (isNumber(token) || isFunction(token))) {
+            if ((isOperator(firstToken) || firstToken.equals("(")) && secondToken.equals("-") && (isNumber(token) || isFunction(token) || isVariable(token))) {
                 result.removeLast();
                 result.add("-" + token);
-            } else if (isFunction(firstToken) && secondToken.equals("-") && (isNumber(token) || isFunction(token))) {
+            } else if (isFunction(firstToken) && secondToken.equals("-") && (isNumber(token) || isFunction(token) || isVariable(token))) {
                 result.removeLast();
                 result.add("-" + token);
             } else 
@@ -134,6 +110,16 @@ public class Tokenizer {
         }
 
         return result;
+    }
+
+    /**
+     * Checks if the given token is a possible variable.
+     * 
+     * @param token the token to check
+     * @return true if the token is a variable, false otherwise
+     */
+    private static boolean isVariable(String token) {
+        return (!isOperator(token) && !isParentheses(token) && !isNumber(token) && !isFunction(token));
     }
 
     /**
