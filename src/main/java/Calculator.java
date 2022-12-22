@@ -51,7 +51,7 @@ public class Calculator {
             queue = tokenizer.tokenize(expression);
         }
 
-        if (!validator.ValidateExpression(queue, variables))
+        if (!validator.validateExpression(queue, variables))
             return validator.getErrorMessage();
 
         queue = parseNegativeExpressions(queue);

@@ -45,7 +45,7 @@ public class Validator {
      * @param variables the HashMap of variables
      * @return true if the expression is valid
      */
-    public boolean ValidateExpression(Queue<String> queue, HashMap<String, Double> variables) {
+    public boolean validateExpression(Queue<String> queue, HashMap<String, Double> variables) {
         validateVariables(queue);
         validateAssignments(queue, variables);
         validateParentheses(queue);
