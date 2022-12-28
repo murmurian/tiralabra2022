@@ -49,7 +49,7 @@ public class Validator {
         validateVariables(queue);
         validateAssignments(queue, variables);
         validateParentheses(queue);
-        // validateOrder(queue);
+        validateOrder(queue);
 
         return this.isValid;
     }
@@ -62,23 +62,37 @@ public class Validator {
     private void validateOrder(Queue<String> queue) {
         Queue<String> copy = new ArrayDeque<>(queue);
         String firstToken = copy.poll();
+        String token;
 
-        if (isOperator(firstToken)) {
-            errorMessage += "First token can not be an operator. ";
-            this.isValid = false;
-        }
-        if (copy.size() == 1)
-            return;
-        String secondToken = copy.poll();
         StringBuilder report = new StringBuilder();
-        for (String token : copy) {
-            report.append(firstToken);
-            if ((isNumber(firstToken) || isVariable(firstToken)) && !isOperator(secondToken)) {
-                errorMessage += "Invalid order of tokens: " + report + "___" + secondToken + "___" + "\n";
-                report.append(secondToken);
+        report.append(firstToken);
+
+        while (!copy.isEmpty()) {
+            token = copy.poll();
+            if ((isNumber(firstToken) || isVariable(firstToken) || firstToken.equals(")"))
+                    && (!isOperator(token) && !token.equals(")"))) {
+                errorMessage += "Invalid order of operations: " + report + " @ " + token + " @ " + "\n";
                 this.isValid = false;
             }
+            if ((isFunction(firstToken) || firstToken.equals("(")) && isOperator(token)) {
+                errorMessage += "Invalid order of operations: " + report + " @ " + token + " @ " + "\n";
+                this.isValid = false;
+            }
+            if (firstToken.equals("(") && token.equals(")")) {
+                errorMessage += "Missing value or variable: " + report + " @ " + token + "\n";
+                this.isValid = false;
+            }
+            if (isOperator(firstToken) && isOperator(token)) {
+                errorMessage += "Invalid order of operations: " + report + " @ " + token + " @ " + "\n";
+                this.isValid = false;
+            }
+            report.append(token);
+            firstToken = token;
+        }
 
+        if (isOperator(firstToken) || isFunction(firstToken)) {
+            errorMessage += "Missing value or variable: " + report + " @ " + "\n";
+            this.isValid = false;
         }
 
     }
@@ -96,7 +110,7 @@ public class Validator {
                 stack.push(token);
             } else if (token.equals(")")) {
                 if (stack.isEmpty()) {
-                    errorMessage += "Unbalanced parentheses at " + unbalancedParentheses + "___" + token + "___" + "\n";
+                    errorMessage += "Unbalanced parentheses at " + unbalancedParentheses + " @ " + token + " @ " + "\n";
                     this.isValid = false;
                 } else {
                     stack.pop();
@@ -116,12 +130,21 @@ public class Validator {
      * @param queue the expression in queue form
      */
     private void validateVariables(Queue<String> queue) {
+        StringBuilder report = new StringBuilder();
         for (String token : queue) {
             if (!isNumber(token) && !isOperator(token) && !isFunction(token) && !isVariable(token)
                     && !isParenthesis(token)) {
-                errorMessage += "Invalid variable name: " + token + "\n";
+                // Split the token with with regex to double and string
+                String[] parts = token.split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)");
+                if (parts.length > 1) {
+                    if (isNumber(parts[0]) && (isVariable(parts[1]) || isFunction(parts[1]))) {
+                        errorMessage += "Did you mean " + report + parts[0] + " * " + parts[1] + "?\n";
+                    }
+                } else
+                    errorMessage += "Invalid variable name: " + token + "\n";
                 this.isValid = false;
-            }
+            }            
+            report.append(token);
         }
     }
 
@@ -141,6 +164,8 @@ public class Validator {
     }
 
     public boolean isVariable(String string) {
+        if (isFunction(string))
+            return false;
         return string.matches("[-]?[a-zA-Z]{1,3}[0-9]{0,4}");
     }
 
@@ -157,8 +182,8 @@ public class Validator {
     /**
      * Checks if the given token is a parenthesis.
      * 
-     * @param token
-     * @return
+     * @param token the token to check
+     * @return true if the token is a parenthesis, false otherwise
      */
     private static boolean isParenthesis(String token) {
         return (token.equals("(") || token.equals(")"));
@@ -172,7 +197,7 @@ public class Validator {
      */
     private static boolean isFunction(String token) {
         return token.equals("sin") || token.equals("cos") || token.equals("tan") || token.equals("-sin")
-                || token.equals("-cos") || token.equals("-tan");
+                || token.equals("-cos") || token.equals("-tan") || token.equals("sqrt") || token.equals("-sqrt");
     }
 
     /**

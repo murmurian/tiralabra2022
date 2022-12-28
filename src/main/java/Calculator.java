@@ -51,6 +51,8 @@ public class Calculator {
             queue = tokenizer.tokenize(expression);
         }
 
+        System.out.println(queue.toString());
+
         if (!validator.validateExpression(queue, variables))
             return validator.getErrorMessage();
 
@@ -185,6 +187,7 @@ public class Calculator {
                     case "sin" -> stack.push(Math.sin(operand));
                     case "cos" -> stack.push(Math.cos(operand));
                     case "tan" -> stack.push(Math.tan(operand));
+                    case "sqrt" -> stack.push(Math.sqrt(operand));
                 }
             }
         }
@@ -209,7 +212,7 @@ public class Calculator {
      * @return true if the token is a function, false otherwise
      */
     private static boolean isFunction(String token) {
-        return token.equals("sin") || token.equals("cos") || token.equals("tan");
+        return token.equals("sin") || token.equals("cos") || token.equals("tan") || token.equals("sqrt");
     }
 
     /**

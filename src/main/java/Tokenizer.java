@@ -34,19 +34,24 @@ public class Tokenizer {
      * @return a queue of Strings representing the function
      */
     private static ArrayDeque<String> tokenizeFunction(String token) {
+        System.out.println(token);
         ArrayDeque<String> function = new ArrayDeque<>();
-        String functionToken = token.substring(0, 3);
+        int functionLength = 2;
+        for (int i = 2; i <= token.length(); i++)
+            if (isFunction(token.substring(0, i)))
+                functionLength = i;
 
-        if (isFunction(functionToken)) {
-            function.add(functionToken);
-            if (isNumber(token.substring(3)))
-                function.add(token.substring(3));
-            else if (token.substring(3).length() > 2)
-                function.addAll(tokenizeFunction(token.substring(3)));
-            else if (token.substring(3).length() != 0)
-                function.add(token.substring(3));
-        } else
+        if (isFunction(token.substring(0, functionLength))) {
+            function.add(token.substring(0, functionLength));
+            if (isNumber(token.substring(functionLength)))
+                function.add(token.substring(functionLength));
+            else if (token.substring(functionLength).length() > 1)
+                function.addAll(tokenizeFunction(token.substring(functionLength)));
+            else if (token.substring(functionLength).length() != 0)
+                function.add(token.substring(functionLength));
+        } else {
             function.add(token);
+        }
 
         return function;
     }
@@ -95,18 +100,22 @@ public class Tokenizer {
         for (String token : function) {
             if (isParentheses(token)) {
                 result.add(token);
-                continue;
-            }
-            if ((isOperator(firstToken) || firstToken.equals("(")) && secondToken.equals("-") && (isNumber(token) || isFunction(token) || isVariable(token))) {
-                result.removeLast();
-                result.add("-" + token);
-            } else if (isFunction(firstToken) && secondToken.equals("-") && (isNumber(token) || isFunction(token) || isVariable(token))) {
-                result.removeLast();
-                result.add("-" + token);
-            } else 
-                result.add(token);
                 firstToken = secondToken;
                 secondToken = token;
+                continue;
+            }
+            if ((isOperator(firstToken) || firstToken.equals("(")) && secondToken.equals("-")
+                    && (isNumber(token) || isFunction(token) || isVariable(token))) {
+                result.removeLast();
+                result.add("-" + token);
+            } else if (isFunction(firstToken) && secondToken.equals("-")
+                    && (isNumber(token) || isFunction(token) || isVariable(token))) {
+                result.removeLast();
+                result.add("-" + token);
+            } else
+                result.add(token);
+            firstToken = secondToken;
+            secondToken = token;
         }
 
         return result;
@@ -149,7 +158,8 @@ public class Tokenizer {
      * @return true if the token is a function, false otherwise
      */
     private static boolean isFunction(String token) {
-        return token.equals("sin") || token.equals("cos") || token.equals("tan") || token.equals("-sin") || token.equals("-cos") || token.equals("-tan");
+        return token.equals("sin") || token.equals("cos") || token.equals("tan") || token.equals("-sin")
+                || token.equals("-cos") || token.equals("-tan") || token.equals("sqrt") || token.equals("-sqrt");
     }
 
     /**
