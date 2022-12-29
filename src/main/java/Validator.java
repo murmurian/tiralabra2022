@@ -1,12 +1,16 @@
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Queue;
+import java.util.Set;
 import java.util.Stack;
 
 /**
  * Class validates the expression and variables.
  */
 public class Validator {
+    public static final String RED_COLOR = "\u001B[31m";
+    public static final String RESET_COLOR = "\u001B[0m";
+    private final Set functions;
     private String errorMessage;
     private Boolean isValid;
 
@@ -17,6 +21,7 @@ public class Validator {
     public Validator() {
         this.errorMessage = "";
         this.isValid = true;
+        this.functions = Set.of("sin", "cos", "tan", "sqrt", "log", "ln");
     }
 
     /**
@@ -26,14 +31,14 @@ public class Validator {
      * @return the error message if the expression is invalid
      */
     public String validateAssignment(String[] parts) {
+        if (!isVariable(parts[0])) {
+            errorMessage = "Variable name is invalid. ";
+        }
         if (parts.length > 2) {
-            errorMessage = "You can only assign one variable at a time. ";
+            errorMessage += "You can only assign one variable at a time. ";
         }
         if (parts[0].substring(0, 1).equals("-")) {
-            errorMessage += "Can not assign negative variables. ";
-        }
-        if (!isVariable(parts[0])) {
-            errorMessage += "Variable name is invalid.";
+            errorMessage += "Can not assign negative variables.";
         }
         return this.errorMessage;
     }
@@ -60,40 +65,54 @@ public class Validator {
      * @param queue the expression in queue form
      */
     private void validateOrder(Queue<String> queue) {
+        Boolean correctOrder = true;
         Queue<String> copy = new ArrayDeque<>(queue);
         String firstToken = copy.poll();
         String token;
 
         StringBuilder report = new StringBuilder();
+
+        if (isOperator(firstToken)) {
+            if (!copy.isEmpty())
+                if (!firstToken.equals("-") || !isVariable(copy.peek())) {
+                    report.append(RED_COLOR);
+                    correctOrder = false;
+                }
+        }
         report.append(firstToken);
+        if (!correctOrder)
+            report.append(RESET_COLOR);
 
         while (!copy.isEmpty()) {
             token = copy.poll();
             if ((isNumber(firstToken) || isVariable(firstToken) || firstToken.equals(")"))
                     && (!isOperator(token) && !token.equals(")"))) {
-                errorMessage += "Invalid order of operations: " + report + " @ " + token + " @ " + "\n";
-                this.isValid = false;
-            }
-            if ((isFunction(firstToken) || firstToken.equals("(")) && isOperator(token)) {
-                errorMessage += "Invalid order of operations: " + report + " @ " + token + " @ " + "\n";
-                this.isValid = false;
-            }
-            if (firstToken.equals("(") && token.equals(")")) {
-                errorMessage += "Missing value or variable: " + report + " @ " + token + "\n";
-                this.isValid = false;
-            }
-            if (isOperator(firstToken) && isOperator(token)) {
-                errorMessage += "Invalid order of operations: " + report + " @ " + token + " @ " + "\n";
-                this.isValid = false;
-            }
-            report.append(token);
+                report.append(RED_COLOR + token + RESET_COLOR);
+                correctOrder = false;
+            } else if ((isFunction(firstToken) || firstToken.equals("(")) && isOperator(token)) {
+                report.append(RED_COLOR + token + RESET_COLOR);
+                correctOrder = false;
+            } else if (firstToken.equals("(") && token.equals(")")) {
+                report.deleteCharAt(report.length() - 1);
+                report.append(RED_COLOR + "(_)" + RESET_COLOR);
+                correctOrder = false;
+            } else if (isOperator(firstToken) && isOperator(token)) {
+                report.append(RED_COLOR + token + RESET_COLOR);
+                correctOrder = false;
+            } else
+                report.append(token);
             firstToken = token;
         }
 
         if (isOperator(firstToken) || isFunction(firstToken)) {
-            errorMessage += "Missing value or variable: " + report + " @ " + "\n";
-            this.isValid = false;
+            report.append(RED_COLOR + "___" + RESET_COLOR);
+            correctOrder = false;
         }
+        if (!correctOrder)
+            errorMessage += "Invalid order of operations or a missing token:\n" + report + "\n";
+
+        if (!correctOrder)
+            this.isValid = false;
 
     }
 
@@ -103,6 +122,7 @@ public class Validator {
      * @param queue the expression in queue form
      */
     private void validateParentheses(Queue<String> queue) {
+        Boolean isBalanced = true;
         Stack<String> stack = new Stack<>();
         StringBuilder unbalancedParentheses = new StringBuilder();
         for (String token : queue) {
@@ -110,16 +130,22 @@ public class Validator {
                 stack.push(token);
             } else if (token.equals(")")) {
                 if (stack.isEmpty()) {
-                    errorMessage += "Unbalanced parentheses at " + unbalancedParentheses + " @ " + token + " @ " + "\n";
+                    if (isBalanced) {
+                        errorMessage += "Too many closing parentheses:\n" + unbalancedParentheses;
+                        isBalanced = false;
+                    }
+                    unbalancedParentheses.append(RED_COLOR + token + RESET_COLOR);
                     this.isValid = false;
-                } else {
+                    continue;
+                } else
                     stack.pop();
-                }
             }
             unbalancedParentheses.append(token);
         }
+        if (!isBalanced)
+            errorMessage += unbalancedParentheses + "\n";
         if (!stack.isEmpty()) {
-            errorMessage += "All parentheses are not closed.";
+            errorMessage += "There are " + stack.size() + " unclosed parentheses.\n";
             this.isValid = false;
         }
     }
@@ -130,21 +156,18 @@ public class Validator {
      * @param queue the expression in queue form
      */
     private void validateVariables(Queue<String> queue) {
-        StringBuilder report = new StringBuilder();
         for (String token : queue) {
             if (!isNumber(token) && !isOperator(token) && !isFunction(token) && !isVariable(token)
                     && !isParenthesis(token)) {
-                // Split the token with with regex to double and string
+                errorMessage += "Invalid variable name: " + token + "\n";
+                this.isValid = false;
                 String[] parts = token.split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)");
                 if (parts.length > 1) {
                     if (isNumber(parts[0]) && (isVariable(parts[1]) || isFunction(parts[1]))) {
-                        errorMessage += "Did you mean " + report + parts[0] + " * " + parts[1] + "?\n";
+                        errorMessage += "Did you mean " + parts[0] + " * " + parts[1] + "?\n";
                     }
-                } else
-                    errorMessage += "Invalid variable name: " + token + "\n";
-                this.isValid = false;
-            }            
-            report.append(token);
+                }
+            }
         }
     }
 
@@ -155,8 +178,13 @@ public class Validator {
      * @param variables the HashMap of variables
      */
     private void validateAssignments(Queue<String> queue, HashMap<String, Double> variables) {
+        String absoluteValue = "";
         for (String token : queue) {
-            if (isVariable(token) && !variables.containsKey(token) && !isFunction(token)) {
+            if (token.length() > 1)
+                absoluteValue = (token.charAt(0) == '-') ? token.substring(1) : token;
+            else
+                absoluteValue = token;
+            if (isVariable(absoluteValue) && !variables.containsKey(absoluteValue) && !isFunction(absoluteValue)) {
                 errorMessage += "Variable " + token + " is not assigned a value.\n";
                 isValid = false;
             }
@@ -195,9 +223,9 @@ public class Validator {
      * @param token the token to check
      * @return true if the token is a function, false otherwise
      */
-    private static boolean isFunction(String token) {
-        return token.equals("sin") || token.equals("cos") || token.equals("tan") || token.equals("-sin")
-                || token.equals("-cos") || token.equals("-tan") || token.equals("sqrt") || token.equals("-sqrt");
+    private boolean isFunction(String token) {
+        return this.functions.contains(token)
+                || (token.charAt(0) == '-' && this.functions.contains(token.substring(1)));
     }
 
     /**

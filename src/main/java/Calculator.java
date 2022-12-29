@@ -11,14 +11,18 @@ import java.util.Stack;
 public class Calculator {
     private HashMap<String, Double> variables;
     private Tokenizer tokenizer;
+    private Boolean radians;
 
     /**
      * Constructor for the Calculator class.
      * Intializes a new HashMap for variables and a new Tokenizer.
      */
-    public Calculator() {
+    public Calculator(Boolean radians) {
         this.variables = new HashMap<>();
         this.tokenizer = new Tokenizer();
+        this.radians = radians;
+        this.variables.put("pi", Math.PI);
+        this.variables.put("e", Math.E);
     }
 
     /**
@@ -30,7 +34,7 @@ public class Calculator {
      * @param expression the expression to evaluate
      * @return the result of the expression
      */
-    public String calculate(String expression) {
+    public String calculate(String expression, IO io) {
         if (expression.isEmpty())
             return "Expression is empty.";
         Validator validator = new Validator();
@@ -40,10 +44,13 @@ public class Calculator {
         Double result;
 
         if (expression.contains("=")) {
+            if (expression.substring(0, 1).equals("="))
+                return "Variable name is empty.";
             String[] parts = expression.split("=");
-            if (parts.length != 2 || !validator.isVariable(parts[0]) || parts[0].substring(0, 1).equals("-")) {
+            if (parts.length == 0)
+                return "Variable name is empty.";
+            if (parts.length != 2 || !validator.isVariable(parts[0]) || parts[0].substring(0, 1).equals("-"))
                 return validator.validateAssignment(parts);
-            }
             variable = parts[0];
             isAssignment = true;
             queue = tokenizer.tokenize(parts[1]);
@@ -51,15 +58,16 @@ public class Calculator {
             queue = tokenizer.tokenize(expression);
         }
 
-        System.out.println(queue.toString());
-
         if (!validator.validateExpression(queue, variables))
             return validator.getErrorMessage();
 
         queue = parseNegativeExpressions(queue);
         queue = infixToPostfix(queue);
         queue = assignVariables(queue);
-        result = evaluate(queue);
+
+        result = evaluate(queue, io);
+        if (result == null)
+            return "";
 
         if (isAssignment)
             variables.put(variable, result);
@@ -78,8 +86,7 @@ public class Calculator {
         Queue<String> result = new ArrayDeque<>();
         for (String token : queue) {
             if (token.length() > 1 && token.charAt(0) == '-' && !Character.isDigit(token.charAt(1))) {
-                result.add("-1");
-                result.add("*");
+                result.add("~");
                 result.add(token.substring(1));
             } else
                 result.add(token);
@@ -163,7 +170,7 @@ public class Calculator {
      * @param queue the postfix expression
      * @return the result
      */
-    private static Double evaluate(Queue<String> queue) {
+    private Double evaluate(Queue<String> queue, IO io) {
         Stack<Double> stack = new Stack<>();
 
         // TODO: Implement strategy design pattern?
@@ -182,17 +189,36 @@ public class Calculator {
                     case "^" -> stack.push(Math.pow(operand1, operand2));
                 }
             } else if (isFunction(token)) {
-                double operand = stack.pop();
+                double operand = (isTrigFunction(token) && !this.radians) ? Math.toRadians(stack.pop()) : stack.pop();
                 switch (token) {
                     case "sin" -> stack.push(Math.sin(operand));
                     case "cos" -> stack.push(Math.cos(operand));
                     case "tan" -> stack.push(Math.tan(operand));
                     case "sqrt" -> stack.push(Math.sqrt(operand));
+                    case "~" -> stack.push(-operand);
+                    case "log" -> {
+                        if (operand < 0) {
+                            io.print("Logarithm of a negative number is not defined.");
+                            return null;
+                        } else
+                            stack.push(Math.log10(operand));
+                    }
+                    case "ln" -> {
+                        if (operand < 0) {
+                            io.print("Logarithm of a negative number is not defined.");
+                            return null;
+                        } else
+                            stack.push(Math.log(operand));
+                    }
                 }
             }
         }
 
         return stack.pop();
+    }
+
+    private boolean isTrigFunction(String token) {
+        return token.equals("sin") || token.equals("cos") || token.equals("tan");
     }
 
     /**
@@ -212,7 +238,7 @@ public class Calculator {
      * @return true if the token is a function, false otherwise
      */
     private static boolean isFunction(String token) {
-        return token.equals("sin") || token.equals("cos") || token.equals("tan") || token.equals("sqrt");
+        return token.equals("sin") || token.equals("cos") || token.equals("tan") || token.equals("sqrt") || token.equals("~") || token.equals("log") || token.equals("ln");
     }
 
     /**
@@ -229,4 +255,17 @@ public class Calculator {
             return false;
         }
     }
+
+    /**
+     * Sets the angle mode to radians or degrees
+     * 
+     * @param angle the angle mode
+     * @param io    the IO to print the set mode
+     */
+    public void setAngle(String angle, IO io) {
+        this.radians = (angle.equals("rad"));
+        String message = (angle.equals("rad")) ? "Angle mode set to radians" : "Angle mode set to degrees";
+        io.print(message);
+    }
+
 }

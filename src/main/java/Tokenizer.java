@@ -34,7 +34,6 @@ public class Tokenizer {
      * @return a queue of Strings representing the function
      */
     private static ArrayDeque<String> tokenizeFunction(String token) {
-        System.out.println(token);
         ArrayDeque<String> function = new ArrayDeque<>();
         int functionLength = 2;
         for (int i = 2; i <= token.length(); i++)
@@ -75,7 +74,7 @@ public class Tokenizer {
         result.add(function.peek());
         String secondToken = function.poll();
 
-        if (firstToken.equals("-") && (isNumber(secondToken) || isFunction(secondToken))) {
+        if (firstToken.equals("-") && (isNumber(secondToken) || Character.isLetter(secondToken.charAt(0)))) {
             result.removeLast();
             result.removeLast();
             result.add("-" + secondToken);
@@ -159,7 +158,8 @@ public class Tokenizer {
      */
     private static boolean isFunction(String token) {
         return token.equals("sin") || token.equals("cos") || token.equals("tan") || token.equals("-sin")
-                || token.equals("-cos") || token.equals("-tan") || token.equals("sqrt") || token.equals("-sqrt");
+                || token.equals("-cos") || token.equals("-tan") || token.equals("sqrt") || token.equals("-sqrt")
+                || token.equals("ln") || token.equals("-ln") || token.equals("log") || token.equals("-log");
     }
 
     /**
