@@ -12,17 +12,19 @@ public class Calculator {
     private HashMap<String, Double> variables;
     private Tokenizer tokenizer;
     private Boolean radians;
+    private IO io;
 
     /**
      * Constructor for the Calculator class.
      * Intializes a new HashMap for variables and a new Tokenizer.
      */
-    public Calculator(Boolean radians) {
+    public Calculator(IO io) {
         this.variables = new HashMap<>();
         this.tokenizer = new Tokenizer();
-        this.radians = radians;
+        this.radians = true;
         this.variables.put("pi", Math.PI);
         this.variables.put("e", Math.E);
+        this.io = io;
     }
 
     /**
@@ -34,7 +36,7 @@ public class Calculator {
      * @param expression the expression to evaluate
      * @return the result of the expression
      */
-    public String calculate(String expression, IO io) {
+    public String calculate(String expression) {
         if (expression.isEmpty())
             return "Expression is empty.";
         Validator validator = new Validator();
@@ -65,7 +67,7 @@ public class Calculator {
         queue = infixToPostfix(queue);
         queue = assignVariables(queue);
 
-        result = evaluate(queue, io);
+        result = evaluate(queue);
         if (result == null)
             return "";
 
@@ -170,7 +172,7 @@ public class Calculator {
      * @param queue the postfix expression
      * @return the result
      */
-    private Double evaluate(Queue<String> queue, IO io) {
+    private Double evaluate(Queue<String> queue) {
         Stack<Double> stack = new Stack<>();
 
         // TODO: Implement strategy design pattern?

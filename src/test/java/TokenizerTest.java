@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Queue;
 
 public class TokenizerTest {
-    Tokenizer tokenizer = new Tokenizer();
+    private Tokenizer tokenizer = new Tokenizer();
 
     @Test
     public void basicTokenizerSplitTest() {
@@ -18,8 +18,8 @@ public class TokenizerTest {
 
     @Test
     public void functionSplitTest() {
-        String expression = "-sin(1)+cos-1*-sin(-2)";
-        Queue<String> expected = new ArrayDeque<>(Arrays.asList("-sin", "(", "1", ")", "+", "cos", "-1", "*", "-sin", "(", "-2", ")"));
+        String expression = "-ln(1)+cos-1*-sin(-2)";
+        Queue<String> expected = new ArrayDeque<>(Arrays.asList("-ln", "(", "1", ")", "+", "cos", "-1", "*", "-sin", "(", "-2", ")"));
         Queue<String> actual = tokenizer.tokenize(expression);
         assertIterableEquals(expected, actual);
     }
@@ -66,8 +66,8 @@ public class TokenizerTest {
     
     @Test
     public void compositeFunctionTest() {
-        String expression = "sincostan1*sinx";
-        Queue<String> expected = new ArrayDeque<>(Arrays.asList("sin", "cos", "tan", "1", "*", "sin", "x"));
+        String expression = "sqrtcostan1*sinx";
+        Queue<String> expected = new ArrayDeque<>(Arrays.asList("sqrt", "cos", "tan", "1", "*", "sin", "x"));
         Queue<String> actual = tokenizer.tokenize(expression);
         assertIterableEquals(expected, actual);
     }

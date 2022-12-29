@@ -1,14 +1,15 @@
 public class Main {
     public static void main(String[] args) {
         IO io = new TextIO();
-        Calculator calculator = new Calculator(true);
-        String expression = "";
-
+        Calculator calculator = new Calculator(io);
         printInstructions(io);
+        calculate(io, calculator);
+    }
 
+    public static void calculate(IO io, Calculator calculator) {
         while (true) {
             io.print("Enter an expression or assign a variable (use \"help\" to print instructions):");
-            expression = io.readLine();
+            String expression = io.readLine();
             if (expression.equals("quit"))
                 break;
             switch (expression) {
@@ -26,7 +27,7 @@ public class Main {
                 }
             }
 
-            io.print(calculator.calculate(expression, io));
+            io.print(calculator.calculate(expression));
         }
     }
 

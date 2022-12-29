@@ -131,7 +131,7 @@ public class Validator {
             } else if (token.equals(")")) {
                 if (stack.isEmpty()) {
                     if (isBalanced) {
-                        errorMessage += "Too many closing parentheses:\n" + unbalancedParentheses;
+                        errorMessage += "Too many closing parentheses:\n";
                         isBalanced = false;
                     }
                     unbalancedParentheses.append(RED_COLOR + token + RESET_COLOR);

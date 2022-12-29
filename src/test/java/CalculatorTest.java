@@ -1,89 +1,212 @@
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Queue;
-
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class CalculatorTest {
-    private String expression1 = ("1+2");
-    private String expression2 = ("1.0+2*3.0");
-    private String expression3 = ("(1+2)*3");
-    private String trigExpression1 = ("sin(1)");
-    private String trigExpression2 = ("sin1.0+cos(2)");
-    private String trigExpression3 = ("sincos(2.3)*tanx3");
-
-    private Queue<String> infix1 = new ArrayDeque<>(Arrays.asList("1", "+", "2"));
-    private Queue<String> infix2 = new ArrayDeque<>(Arrays.asList("1.0", "+", "2", "*", "3.0"));
-    private Queue<String> infix3 = new ArrayDeque<>(Arrays.asList("(", "1", "+", "2", ")", "*", "3"));
-    private Queue<String> trigInfix1 = new ArrayDeque<>(Arrays.asList("sin", "(", "1", ")"));
-    private Queue<String> trigInfix2 = new ArrayDeque<>(Arrays.asList("sin", "1.0", "+", "cos", "(", "2", ")"));
-    private Queue<String> trigInfix3 = new ArrayDeque<>(Arrays.asList("sin", "cos", "(", "2.3", ")", "*", "tan", "x3"));
-
-    private Queue<String> postfix1 = new ArrayDeque<>(Arrays.asList("1", "2", "+"));
-    private Queue<String> postfix2 = new ArrayDeque<>(Arrays.asList("1.0", "2", "3.0", "*", "+"));
-    private Queue<String> postfix3 = new ArrayDeque<>(Arrays.asList("1", "2", "^", "3", "*"));
-
-    @Test
-    public void firstTest() {
-        assertTrue(true);
-    }
 /*
+ * It seems unnecessary to thoroughly test this class, as most of the methods are
+ * private and are better tested through end-to-end testing. However, I will
+ * use this class to try out injecting IO-dependecy into the class under test.
+ */
+public class CalculatorTest {
+    private Calculator calculator = new Calculator(new TextIO());
+    private IO io = new TextIO();
+
     @Test
-    public void testTokenizeBasicArithmetics() {
-        assertIterableEquals(infix1, Calculator.tokenize(expression1));
-        assertIterableEquals(infix2, Calculator.tokenize(expression2));
-        assertIterableEquals(infix3, Calculator.tokenize(expression3));
+    public void angleSetsToRadians() {
+        io = new TestIO("rad");
+        calculator.setAngle("rad", io);
+        assertEquals("Angle mode set to radians", io.getOutput());
     }
 
     @Test
-    public void testTokenizeTrigFunctions() {
-        assertIterableEquals(trigInfix1, Calculator.tokenize(trigExpression1));
-        assertIterableEquals(trigInfix2, Calculator.tokenize(trigExpression2));
-        assertIterableEquals(trigInfix3, Calculator.tokenize(trigExpression3));
+    public void angleSetsToDegrees() {
+        io = new TestIO("deg");
+        calculator.setAngle("deg", io);
+        assertEquals("Angle mode set to degrees", io.getOutput());
     }
 
     @Test
-    public void testInfixToPostfixBasic() {
-        assertIterableEquals(new ArrayDeque<>(Arrays.asList("1", "2", "+")), Calculator.infixToPostfix(infix1));
-        assertIterableEquals(new ArrayDeque<>(Arrays.asList("1.0", "2", "3.0", "*", "+")), Calculator.infixToPostfix(infix2));
-        assertIterableEquals(new ArrayDeque<>(Arrays.asList("1", "2", "+", "3", "*")), Calculator.infixToPostfix(infix3));
-    }
-    
-    @Test
-    public void testInfixToPostfixTrig() {
-        assertIterableEquals(new ArrayDeque<>(Arrays.asList("1", "sin")), Calculator.infixToPostfix(trigInfix1));
-        assertIterableEquals(new ArrayDeque<>(Arrays.asList("1.0", "sin", "2", "cos", "+")), Calculator.infixToPostfix(trigInfix2));
+    public void emptyExpressionPasses() {
+        String expected = "Expression is empty.";
+        String actual = calculator.calculate("");
+        assertEquals(expected, actual);
     }
 
     @Test
-    public void testEvaluateBasic() {
-        assertTrue(Calculator.evaluate(postfix1) == 3);
-        assertTrue(Calculator.evaluate(postfix2) == 7);
-        assertTrue(Calculator.evaluate(postfix3) == 3);
+    public void emptyAssignmentFails() {
+        String expected = "Variable name is empty.";
+        String actual = calculator.calculate("=");
+        assertEquals(expected, actual);
+        actual = calculator.calculate("===");
+        assertEquals(expected, actual);
     }
 
     @Test
-    public void evaluateFalse() {
-        assertFalse(Calculator.evaluate(postfix1) == 4);
-        assertFalse(Calculator.evaluate(postfix2) == 8);
-        assertFalse(Calculator.evaluate(new ArrayDeque<>(Arrays.asList("1", "sin"))) == 1337);
-    }
-
-    @Test void testEvaluateTrig() {
-        assertTrue(Calculator.evaluate(new ArrayDeque<>(Arrays.asList("1", "sin"))) == Math.sin(1));
-        assertTrue(Calculator.evaluate(new ArrayDeque<>(Arrays.asList("1.0", "sin", "2", "cos", "+"))) == Math.sin(1.0) + Math.cos(2));
+    public void validAssignmentPasses() {
+        String expected = "Variable x assigned to 1337.0";
+        String actual = calculator.calculate("x=1337");
+        assertEquals(expected, actual);
     }
 
     @Test
-    public void calculatorWorks() {
-        assertTrue(Calculator.evaluate(Calculator.infixToPostfix(Calculator.tokenize(expression1))) == 3);
-        assertTrue(Calculator.evaluate(Calculator.infixToPostfix(Calculator.tokenize(expression2))) == 7);
-        assertTrue(Calculator.evaluate(Calculator.infixToPostfix(Calculator.tokenize(expression3))) == 9);
+    public void tooManyEqualsFails() {
+        String expected = "You can only assign one variable at a time. ";
+        String actual = calculator.calculate("x=1337=42069");
+        assertEquals(expected, actual);
     }
-*/
+
+    @Test
+    public void invalidVariableFails() {
+        String expected = "Variable name is invalid. ";
+        String actual = calculator.calculate("testVar=1337");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void negativeAssignmentFails() {
+        String expected = "Can not assign negative variables.";
+        String actual = calculator.calculate("-x=1337");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void feedBackForInvalidVariable() {
+        String expected = "Invalid variable name: 1337x\nDid you mean 1337 * x?\n";
+        String actual = calculator.calculate("1337x");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void assignedVariableIsCorrect() {
+        calculator.calculate("x=1337");
+        String expected = "1337.0";
+        String actual = calculator.calculate("x");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void unAssignedVariableFails() {
+        String expected = "Variable x is not assigned a value.\n";
+        String actual = calculator.calculate("x");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void balancedParenthesisPasses() {
+        String expected = "9.0";
+        String actual = calculator.calculate("(1+2)*3");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void unclosedParenthesisFails() {
+        String expected = "There are 1 unclosed parentheses.\n";
+        String actual = calculator.calculate("(1+2)*(3");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void unopenedParenthesisFails() {
+        String expected = "Too many closing parentheses:\n1+2[31m)[0m*3[31m)[0m\n";
+        String actual = calculator.calculate("1+2)*3)");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void emptyParenthesisFails() {
+        String expected = "Invalid order of operations or a missing token:\n[31m(_)[0m\n";
+        String actual = calculator.calculate("()");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void incorrectOrder() {
+        String expected = "Invalid order of operations or a missing token:\n[31m*[0m3\n";
+        String actual = calculator.calculate("*3");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void incorrectOrder2() {
+        String expected = "Invalid order of operations or a missing token:\n(1)[31m5[0m\n";
+        String actual = calculator.calculate("(1)5");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void incorrectOrder3() {
+        String expected = "Invalid order of operations or a missing token:\n1+sin[31m+[0m5\n";
+        String actual = calculator.calculate("1+sin+5");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void doubleOperatorFails() {
+        String expected = "Invalid order of operations or a missing token:\n1+[31m+[0m5\n";
+        String actual = calculator.calculate("1++5");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void expressionEndsWithOperator() {
+        String expected = "Invalid order of operations or a missing token:\n1+2*[31m___[0m\n";
+        String actual = calculator.calculate("1+2*");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void multipleErrorsFails() {
+        String expected = "Variable x is not assigned a value.\nToo many closing parentheses:\n1+2(*sqrt/)+[31m)[0m[31m)[0mx(\nThere are 1 unclosed parentheses.\nInvalid order of operations or a missing token:\n1+2[31m([0m[31m*[0msqrt[31m/[0m)+))[31mx[0m[31m([0m\n";
+        String actual = calculator.calculate("1+2(*sqrt/)+))x(");
+        assertEquals(expected, actual);
+    }
+
+    // Now for the actual calculation tests
+
+    @Test
+    public void basicOperations() {
+        String expected = "7.0";
+        String actual = calculator.calculate("1+2*3/4^0");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void trigonometricIdentity() {
+        String expected = "1.0";
+        String actual = calculator.calculate("sin(0)^2+cos(0)^2");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void compositeTrigonometricFunction() {
+        String expected = "0.0";
+        String actual = calculator.calculate("tansin(0)");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void degreesWork() {
+        calculator.setAngle("deg", io);
+        String expected = "-1.0";
+        String actual = calculator.calculate("cos(180)");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void assignedValuesWork() {
+        calculator.calculate("x=1337");
+        String expected = "1337.0";
+        String actual = calculator.calculate("x");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void assignedValuesWork2() {
+        calculator.calculate("x=1337");
+        calculator.calculate("y=42069");
+        String expected = "43406.0";
+        String actual = calculator.calculate("x--y");
+        assertEquals(expected, actual);
+    }
+
 }

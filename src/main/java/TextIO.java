@@ -16,4 +16,9 @@ public class TextIO implements IO {
     public void print(String message) {
         System.out.println(message);
     }
+
+    @Override
+    public Object getOutput() {
+        return null;
+    }
 }
