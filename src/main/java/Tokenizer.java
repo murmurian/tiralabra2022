@@ -81,7 +81,7 @@ public class Tokenizer {
             if (function.size() == 0)
                 return result;
             firstToken = secondToken;
-            secondToken = function.peek();
+            //secondToken = function.peek();
         }
 
         if (firstToken.equals("-") && secondToken.equals("(")) {

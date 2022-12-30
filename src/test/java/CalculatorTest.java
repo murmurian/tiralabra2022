@@ -1,5 +1,6 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /*
@@ -9,18 +10,17 @@ import org.junit.jupiter.api.Test;
  */
 public class CalculatorTest {
     private Calculator calculator = new Calculator(new TextIO());
-    private IO io = new TextIO();
 
     @Test
     public void angleSetsToRadians() {
-        io = new TestIO("rad");
+        IO io = new TestIO("rad");
         calculator.setAngle("rad", io);
         assertEquals("Angle mode set to radians", io.getOutput());
     }
 
     @Test
     public void angleSetsToDegrees() {
-        io = new TestIO("deg");
+        IO io = new TestIO("deg");
         calculator.setAngle("deg", io);
         assertEquals("Angle mode set to degrees", io.getOutput());
     }
@@ -186,7 +186,7 @@ public class CalculatorTest {
 
     @Test
     public void degreesWork() {
-        calculator.setAngle("deg", io);
+        calculator.setAngle("deg", new TextIO());
         String expected = "-1.0";
         String actual = calculator.calculate("cos(180)");
         assertEquals(expected, actual);
@@ -206,6 +206,56 @@ public class CalculatorTest {
         calculator.calculate("y=42069");
         String expected = "43406.0";
         String actual = calculator.calculate("x--y");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void assignedValuesWork3() {
+        calculator.calculate("x=-9");
+        String expected = "6.0";
+        String actual = calculator.calculate("-x-sqrt-x");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void assignedValuesWork4() {
+        calculator.calculate("x=-1337");
+        String expected = "Variable x assigned to 1337.0";
+        String actual = calculator.calculate("x=-x");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void logWorks() {
+        String expected = "2.0";
+        String actual = calculator.calculate("log(100)");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void lnWorks() {
+        String expected = "2.0";
+        String actual = calculator.calculate("ln(e^2)");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void logFailsNegative() {
+        TestIO testIO = new TestIO("log(-1337)");
+        Calculator ioCalculator = new Calculator(testIO);
+        String expected = "Logarithm of a negative number is not defined.";
+        ioCalculator.calculate(testIO.readLine());
+        String actual = testIO.getOutput();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void lnFailsNegative() {
+        TestIO testIO = new TestIO("ln(-42069)");
+        Calculator ioCalculator = new Calculator(testIO);
+        String expected = "Logarithm of a negative number is not defined.";
+        ioCalculator.calculate(testIO.readLine());
+        String actual = testIO.getOutput();
         assertEquals(expected, actual);
     }
 
