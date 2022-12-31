@@ -1,33 +1,13 @@
 # Tieteellinen laskin
 
-Ohjelman voi suorittaa komennolla:
-
-```
-./gradlew gradle run -q --console=plain
-```
-
-Testit:
-  
-```
-./gradlew test
-```
-Jacoco testit:
-
-```
-./gradlew jacocoTestReport
-```
-
-Checkstyle:
-
-```
-./gradlew checkstyleMain
-```
+Helsingin yliopiston Aineopintojen harjoitustyö: Tietorakenteet ja algoritmit -kurssin harjoitustyö. Tieteellinen laskin jossa voi sijoittaa arvoja muuttujiin.
 
 ## Dokumentaatio:
 
 * [Määrittelydokumentti](https://github.com/murmurian/tiralabra2022/blob/main/dokumentaatio/maarittelydokumentti.md)
-* [Testausdokumentti](https://github.com/murmurian/tiralabra2022/blob/main/dokumentaatio/testausdokumentti.md)
 * [Toteutusdokumentti](https://github.com/murmurian/tiralabra2022/blob/main/dokumentaatio/toteutusdokumentti.md)
+* [Testausdokumentti](https://github.com/murmurian/tiralabra2022/blob/main/dokumentaatio/testausdokumentti.md)
+* [Käyttöohje](https://github.com/murmurian/tiralabra2022/blob/main/dokumentaatio/kayttoohje.md)
 
 * [Viikkoraportti 1](https://github.com/murmurian/tiralabra2022/blob/main/dokumentaatio/Viikkoraportti1.md)
 * [Viikkoraportti 2](https://github.com/murmurian/tiralabra2022/blob/main/dokumentaatio/Viikkoraportti2.md)
