@@ -1,13 +1,7 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-/*
- * It seems unnecessary to thoroughly test this class, as most of the methods are
- * private and are better tested through end-to-end testing. However, I will
- * use this class to try out injecting IO-dependecy into the class under test.
- */
 public class CalculatorTest {
     private Calculator calculator = new Calculator(new TextIO());
 
